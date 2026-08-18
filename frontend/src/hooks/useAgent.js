@@ -23,9 +23,9 @@ export function useAgent() {
 
     let pct = 0;
     const timer = setInterval(() => {
-      pct = Math.min(pct + 7, 92);
+      pct = Math.min(pct + 3, 95);
       dispatch(setProgress(pct));
-    }, 150);
+    }, 400);
 
     try {
       const data = await call();

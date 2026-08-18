@@ -33,6 +33,6 @@ if FAST_MODEL != os.getenv("GROQ_MODEL"):
 print(f"[llm] fast={FAST_MODEL}  reasoning={REASONING_MODEL}")
 
 fast_llm = ChatGroq(model=FAST_MODEL, temperature=0, api_key=KEY,
-                    model_kwargs={"reasoning_format": "hidden"})
+                    reasoning_format="hidden")
 reasoning_llm = ChatGroq(model=REASONING_MODEL, temperature=0, api_key=KEY,
-                         model_kwargs={"reasoning_format": "hidden"})
+                         reasoning_format="hidden")

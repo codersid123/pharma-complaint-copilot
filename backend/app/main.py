@@ -5,7 +5,8 @@ from datetime import datetime
 from .schemas import AgentResponse, TextIntakeRequest, CopilotRequest
 from .db import engine, Base, get_db
 from .models import Complaint
-from . import fake_agent
+from .agent import run_agent
+from .extract import extract_text
 
 app = FastAPI(title="AIVOA Complaint Management API")
 Base.metadata.create_all(bind=engine)
@@ -24,18 +25,23 @@ def health():
 
 @app.post("/api/intake/upload", response_model=AgentResponse)
 async def intake_upload(file: UploadFile = File(...)):
-    contents = await file.read()
-    print(f"Received {file.filename}, {len(contents)} bytes")
-    return fake_agent.fake_extract()
+    data = await file.read()
+    text = extract_text(file.filename, data)
+    if not text.strip():
+        return AgentResponse(
+            patch={"updates": {}, "clear": []},
+            assistant_message="I couldn't read any text from that file. "
+                              "Try a text-based PDF, or paste the content instead.")
+    return AgentResponse(**run_agent(raw_text=text))
 
 @app.post("/api/intake/text", response_model=AgentResponse)
 def intake_text(req: TextIntakeRequest):
-    print(f"Received {len(req.text)} chars of pasted text")
-    return fake_agent.fake_extract()
+    return AgentResponse(**run_agent(raw_text=req.text))
 
 @app.post("/api/copilot/chat", response_model=AgentResponse)
 def copilot(req: CopilotRequest):
-    return fake_agent.fake_modify(req.message, req.current_form)
+    return AgentResponse(**run_agent(user_message=req.message,
+                                     current_form=req.current_form))
 
 @app.post("/api/complaints")
 def create_complaint(payload: dict, db: Session = Depends(get_db)):
