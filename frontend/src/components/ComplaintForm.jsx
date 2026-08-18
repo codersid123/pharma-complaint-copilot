@@ -1,7 +1,7 @@
 import { useSelector, useDispatch } from "react-redux";
 import AIField from "./AIField";
 import { resetForm } from "../store/complaintSlice";
-import { saveComplaint } from "../api";
+import { saveComplaint, checkDuplicate } from "../api";
 
 export default function ComplaintForm() {
   const dispatch = useDispatch();
@@ -9,12 +9,18 @@ export default function ComplaintForm() {
   const canSave = missingFields.length === 0 && form.customer_name;
 
   const onSave = async () => {
-    try {
-      const res = await saveComplaint(form, risk);
-      alert(`Saved as ${res.complaint_number}`);
-    } catch (e) {
-      alert("Save endpoint not built yet — coming in the Postgres step.");
+    const { duplicates } = await checkDuplicate(form);
+    if (duplicates.length > 0) {
+      const list = duplicates.map((d) => d.complaint_number).join(", ");
+      if (
+        !window.confirm(
+          `Batch ${form.batch_number} already has ${duplicates.length} logged complaint(s): ${list}.\n\nSave anyway?`,
+        )
+      )
+        return;
     }
+    const res = await saveComplaint(form, risk);
+    alert(`Saved as ${res.complaint_number}`);
   };
 
   return (

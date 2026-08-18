@@ -20,3 +20,6 @@ export const askCopilot = (message, current_form) =>
 
 export const saveComplaint = (form, risk) =>
   api.post("/complaints", { form, risk }).then((r) => r.data);
+
+export const checkDuplicate = (form) =>
+  api.post("/complaints/check-duplicate", { form }).then((r) => r.data);

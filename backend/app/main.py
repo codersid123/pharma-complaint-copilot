@@ -65,3 +65,13 @@ def list_complaints(db: Session = Depends(get_db)):
              "customer_name": r.customer_name, "product_name": r.product_name,
              "batch_number": r.batch_number, "initial_severity": r.initial_severity,
              "status": r.status, "created_at": r.created_at} for r in rows]
+
+@app.post("/api/complaints/check-duplicate")
+def check_duplicate(payload: dict, db: Session = Depends(get_db)):
+    batch = (payload.get("form") or {}).get("batch_number")
+    if not batch:
+        return {"duplicates": []}
+    rows = db.query(Complaint).filter(Complaint.batch_number == batch).all()
+    return {"duplicates": [{"complaint_number": r.complaint_number,
+                            "product_name": r.product_name,
+                            "created_at": str(r.created_at)} for r in rows]}
