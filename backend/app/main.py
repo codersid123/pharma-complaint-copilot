@@ -1,11 +1,11 @@
 from fastapi import FastAPI, UploadFile, File, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from .schemas import AgentResponse, TextIntakeRequest, CopilotRequest
-from . import fake_agent
 from sqlalchemy.orm import Session
 from datetime import datetime
+from .schemas import AgentResponse, TextIntakeRequest, CopilotRequest
 from .db import engine, Base, get_db
 from .models import Complaint
+from . import fake_agent
 
 app = FastAPI(title="AIVOA Complaint Management API")
 Base.metadata.create_all(bind=engine)
