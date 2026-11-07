@@ -10,9 +10,6 @@ to the copilot — there is no manual data entry path. Every value in the record
 traces back to a source document or an explicit instruction, which is a stronger audit
 position than a free-text form where nobody knows where a batch number came from.
 
-**Demo video:** _[link]_
-**Code walkthrough:** _[link]_
-
 ---
 
 ## Stack
