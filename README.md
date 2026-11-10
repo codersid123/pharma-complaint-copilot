@@ -124,7 +124,18 @@ Currently resolving to:
   complaint against the same batch
 - **Ambiguity handling** — the agent asks which field was meant rather than guessing
 
----
+### Bulk import (CSV / Excel)
+
+`POST /api/import` turns a spreadsheet into complaint records.
+
+- Accepts `.csv` and `.xlsx`; ~50 header spellings map to fields (`Batch No`, `Lot`, `Exp. Date`, `Qty`…)
+- Every row is validated with the same model as a manual save
+- Bad rows are reported by spreadsheet row number, field and reason; good rows are still saved
+- All good rows are saved in one transaction
+- `?dry_run=true` returns the report without saving; the UI requires a check before import
+- Same batch + customer + complaint date is treated as a duplicate, so re-importing a file is safe
+
+## Try it with `samples/complaints_bulk.xlsx` (40 rows, 5 deliberately bad).
 
 ## Domain context
 
@@ -190,7 +201,6 @@ contamination case that should classify as Critical.
 
 Tests use a fake LLM and an in-memory database, so they need no API key, no network and no Postgres. CI runs them on Python 3.12 and 3.14, plus the API tests against a real Postgres 16.
 
-
 ### Frontend
 
 App at http://localhost:5173
@@ -225,10 +235,12 @@ backend/
     db.py           Engine and session
     dates.py        Date parsing used on save and import
     seed.py         50 sample complaints for demos
+    importer.py     CSV/Excel bulk import
   alembic/          Database migrations
   tests/            pytest suite (fake LLM, no network)
   scripts/
     check_models.py Diagnostic: lists models available to the API key
+    make_bulk_sample.py  Builds samples/complaints_bulk.xlsx
 docker-compose.yml  db + backend + frontend
 frontend/
   src/

@@ -19,6 +19,7 @@ FORMATS = [
     "%b %Y",      # Jun 2025
     "%m/%Y",      # 06/2025
     "%Y-%m",      # 2025-06
+    "%Y-%m-%d %H:%M:%S",  # 2025-06-01 00:00:00  (an Excel date cell read as text)
 ]
 
 

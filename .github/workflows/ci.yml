@@ -60,7 +60,7 @@ jobs:
       - run: alembic check
       # ...and be reversible.
       - run: alembic downgrade base && alembic upgrade head
-      - run: pytest tests/test_api.py tests/test_seed.py
+      - run: pytest tests/test_api.py tests/test_seed.py tests/test_importer.py
 
   frontend:
     name: Frontend lint + build
