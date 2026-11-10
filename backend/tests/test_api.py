@@ -59,3 +59,15 @@ def test_copilot_chat_passes_form(client, fake_agent):
                     json={"message": "make it critical", "current_form": FORM})
     assert r.status_code == 200
     assert fake_agent[0]["current_form"] == FORM
+
+
+
+def test_dates_are_parsed_and_returned_as_iso(client):
+    form = {**FORM, "manufacturing_date": "June 2025", "expiry_date": "2027-05-31"}
+    assert client.post("/api/complaints", json={"form": form}).status_code == 200
+
+
+def test_bad_date_returns_422_naming_the_field(client):
+    r = client.post("/api/complaints", json={"form": {**FORM, "expiry_date": "soon"}})
+    assert r.status_code == 422
+    assert "expiry_date" in str(r.json()["detail"])

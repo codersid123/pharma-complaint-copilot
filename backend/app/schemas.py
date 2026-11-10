@@ -1,6 +1,9 @@
+from datetime import date
 from typing import Any, Dict, List, Literal, Optional
 
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict, field_validator, model_validator
+
+from .dates import parse_date
 
 Severity = Literal["Critical", "Major", "Minor"]
 Priority = Literal["High", "Medium", "Low"]
@@ -50,6 +53,15 @@ class SavedForm(ComplaintForm):
     casing is fixed before validation. Unknown keys are ignored.
     """
     model_config = ConfigDict(extra="ignore")
+
+    manufacturing_date: Optional[date] = None
+    expiry_date: Optional[date] = None
+    complaint_date: Optional[date] = None
+
+    @field_validator("manufacturing_date", "expiry_date", "complaint_date", mode="before")
+    @classmethod
+    def _dates(cls, v):
+        return parse_date(v)
 
     @model_validator(mode="before")
     @classmethod

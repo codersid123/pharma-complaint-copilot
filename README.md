@@ -19,7 +19,7 @@ position than a free-text form where nobody knows where a batch number came from
 | Layer    | Technology                              |
 | -------- | --------------------------------------- |
 | Frontend | React 18, Redux Toolkit, Vite, Inter    |
-| Backend  | Python 3.11, FastAPI                    |
+| Backend  | Python 3.12, FastAPI                    |
 | Agent    | LangGraph                               |
 | LLM      | Groq (see Model Selection Note)         |
 | Database | PostgreSQL 16 + SQLAlchemy              |
@@ -148,6 +148,34 @@ Severity guidance encoded in the risk prompt:
 
 ## Setup
 
+### Quick start (Docker)
+
+```bash
+cp .env.example .env      # add your GROQ_API_KEY
+docker compose up --build
+```
+
+Frontend: http://localhost:5173 · API docs: http://localhost:8000/docs
+The database is migrated and seeded with 50 sample complaints on first start.
+
+### Without Docker
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+```bash
+cd backend
+python -m venv venv && venv\Scripts\Activate.ps1
+pip install -r requirements-dev.txt
+cp .env.example .env      # set DATABASE_URL and GROQ_API_KEY
+alembic upgrade head
+python -m app.seed
+uvicorn app.main:app --reload --port 8000
+```
+
 ## Testing
 
 ```bash
@@ -156,16 +184,14 @@ pip install -r requirements-dev.txt
 pytest --cov
 ```
 
+`samples/` contains three documents chosen to exercise different paths: a complete
+formal complaint, an informal email missing several required fields, and an API
+contamination case that should classify as Critical.
+
 Tests use a fake LLM and an in-memory database, so they need no API key, no network and no Postgres. CI runs them on Python 3.12 and 3.14, plus the API tests against a real Postgres 16.
 
 
 ### Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
 
 App at http://localhost:5173
 
@@ -197,7 +223,13 @@ backend/
     schemas.py      Pydantic models — the shared form contract
     models.py       SQLAlchemy ORM
     db.py           Engine and session
-  check_models.py   Diagnostic: lists models available to the API key
+    dates.py        Date parsing used on save and import
+    seed.py         50 sample complaints for demos
+  alembic/          Database migrations
+  tests/            pytest suite (fake LLM, no network)
+  scripts/
+    check_models.py Diagnostic: lists models available to the API key
+docker-compose.yml  db + backend + frontend
 frontend/
   src/
     store/          Redux slice — single source of truth for the form
@@ -206,23 +238,6 @@ frontend/
     api.js          axios client
 samples/            Realistic complaint documents for testing
 ```
-
----
-
-## Testing
-
-Standalone scripts in `backend/`, runnable without the frontend:
-
-```bash
-python check_models.py    # what the API key can access
-python test_llm.py        # model connectivity
-python test_extract.py    # PDF text extraction
-python test_agent.py      # full agent: extract, modify, append, query
-```
-
-`samples/` contains three documents chosen to exercise different paths: a complete
-formal complaint, an informal email missing several required fields, and an API
-contamination case that should classify as Critical.
 
 ---
 
