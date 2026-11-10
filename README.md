@@ -1,5 +1,7 @@
 # AI-Powered Customer Complaint Management System
 
+[![CI](https://github.com/codersid123/pharma-complaint-copilot/actions/workflows/ci.yml/badge.svg)](https://github.com/codersid123/pharma-complaint-copilot/actions/workflows/ci.yml)
+
 A customer complaint intake and triage module for a pharmaceutical Quality Management
 System, covering both API (Active Pharmaceutical Ingredient) and FDF (Finished Dosage
 Form) manufacturing.
@@ -146,6 +148,16 @@ Severity guidance encoded in the risk prompt:
 
 ## Setup
 
+## Testing
+
+```bash
+cd backend
+pip install -r requirements-dev.txt
+pytest --cov
+```
+
+Tests use a fake LLM and an in-memory database, so they need no API key, no network and no Postgres. CI runs them on Python 3.12 and 3.14, plus the API tests against a real Postgres 16.
+
 ### Prerequisites
 
 - Python 3.11 or 3.12
@@ -156,7 +168,7 @@ Severity guidance encoded in the risk prompt:
 ### Database
 
 ```bash
-psql -U postgres -c "CREATE DATABASE aivoa;"
+psql -U postgres -c "CREATE DATABASE complaint-copilot;"
 ```
 
 The `complaints` table is created automatically on first backend start.
@@ -174,7 +186,7 @@ pip install -r requirements.txt
 Copy `.env.example` to `.env` and fill in:
 
 ```
-DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@localhost:5432/aivoa
+DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@localhost:5432/complaint-copilot
 GROQ_API_KEY=gsk_...
 GROQ_MODEL=gemma2-9b-it
 GROQ_FALLBACK_MODEL=openai/gpt-oss-20b

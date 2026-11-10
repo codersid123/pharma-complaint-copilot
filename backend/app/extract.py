@@ -1,5 +1,7 @@
-import io, email
+import email
+import io
 from email import policy
+
 
 def text_from_pdf(data: bytes) -> str:
     import pdfplumber
