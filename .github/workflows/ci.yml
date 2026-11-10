@@ -43,9 +43,9 @@ jobs:
     defaults:
       run:
         working-directory: backend
-      env:
-        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/complaint_copilot_test
-        TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/complaint_copilot_test
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/complaint_copilot_test
+      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/complaint_copilot_test
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
