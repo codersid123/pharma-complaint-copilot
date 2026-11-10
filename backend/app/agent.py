@@ -1,7 +1,10 @@
-import json, re
-from typing import TypedDict, Optional, List
-from langgraph.graph import StateGraph, END
-from .llm import fast_llm, reasoning_llm
+import json
+import re
+from typing import List, Optional, TypedDict
+
+from langgraph.graph import END, StateGraph
+
+from .llm import LLMs, get_llms
 from .schemas import ComplaintForm
 
 FIELD_KEYS = list(ComplaintForm.model_fields.keys())
@@ -51,10 +54,10 @@ USER MESSAGE: "{msg}"
 Answer with one word only."""
 
 
-def route_intent(state: AgentState):
+def route_intent(state: AgentState, llms: LLMs):
     if state.get("raw_text"):
         return {"intent": "extract"}
-    out = fast_llm.invoke(ROUTER_PROMPT.format(msg=state.get("user_message", "")))
+    out = llms.fast.invoke(ROUTER_PROMPT.format(msg=state.get("user_message", "")))
     word = out.content.strip().lower()
     intent = next((i for i in ["modify", "clarify", "query"] if i in word), "modify")
     return {"intent": intent}
@@ -81,8 +84,8 @@ DOCUMENT:
 {text}"""
 
 
-def extract_fields(state: AgentState):
-    out = reasoning_llm.invoke(EXTRACT_PROMPT.format(
+def extract_fields(state: AgentState, llms: LLMs):
+    out = llms.reasoning.invoke(EXTRACT_PROMPT.format(
         keys=", ".join(FIELD_KEYS), text=state["raw_text"][:6000]))
     data = safe_json(out.content)
     updates = {k: v for k, v in data.items()
@@ -116,13 +119,15 @@ Rules:
 - If severity changes, update priority to stay consistent."""
 
 
-def modify_fields(state: AgentState):
-    out = reasoning_llm.invoke(MODIFY_PROMPT.format(
+def modify_fields(state: AgentState, llms: LLMs):
+    out = llms.reasoning.invoke(MODIFY_PROMPT.format(
         form=json.dumps(state.get("current_form", {}), indent=2),
         keys=", ".join(FIELD_KEYS), msg=state.get("user_message", "")))
     d = safe_json(out.content)
-    updates = {k: v for k, v in d.get("updates", {}).items() if k in FIELD_KEYS}
-    clear = [k for k in d.get("clear", []) if k in FIELD_KEYS]
+    raw_updates = d.get("updates") if isinstance(d.get("updates"), dict) else {}
+    raw_clear = d.get("clear") if isinstance(d.get("clear"), list) else []
+    updates = {k: v for k, v in raw_updates.items() if k in FIELD_KEYS}
+    clear = [k for k in raw_clear if k in FIELD_KEYS and k not in updates]
     note = d.get("note") or (f"Updated: {', '.join(updates)}" if updates
                              else "I couldn't work out what to change — could you rephrase?")
     return {"form_patch": {"updates": updates, "clear": clear},
@@ -130,8 +135,8 @@ def modify_fields(state: AgentState):
 
 
 # ---------------- node 4: clarify ----------------
-def clarify(state: AgentState):
-    out = fast_llm.invoke(
+def clarify(state: AgentState, llms: LLMs):
+    out = llms.fast.invoke(
         f'The user said: "{state.get("user_message", "")}". A complaint form has these '
         f'fields: {", ".join(FIELD_KEYS)}. Ask one short question to identify which '
         f'field they mean. Reply with the question only.')
@@ -140,8 +145,8 @@ def clarify(state: AgentState):
 
 
 # ---------------- node 5: query ----------------
-def answer_question(state: AgentState):
-    out = reasoning_llm.invoke(
+def answer_question(state: AgentState, llms: LLMs):
+    out = llms.reasoning.invoke(
         f"You are a pharmaceutical QMS assistant. Current complaint record:\n"
         f"{json.dumps(state.get('current_form', {}), indent=2)}\n\n"
         f"Question: {state.get('user_message', '')}\n\n"
@@ -179,11 +184,11 @@ is Critical and must be escalated to Pharmacovigilance within 24 hours. Signific
 quality defects without immediate safety risk are Major. Cosmetic issues are Minor."""
 
 
-def assess_risk(state: AgentState):
+def assess_risk(state: AgentState, llms: LLMs):
     merged = {**state.get("current_form", {}), **state["form_patch"]["updates"]}
     if not merged.get("complaint_description"):
         return {"risk": None}
-    out = reasoning_llm.invoke(RISK_PROMPT.format(form=json.dumps(merged, indent=2)))
+    out = llms.reasoning.invoke(RISK_PROMPT.format(form=json.dumps(merged, indent=2)))
     d = safe_json(out.content)
     if not d.get("level"):
         return {"risk": None}
@@ -197,15 +202,22 @@ def assess_risk(state: AgentState):
 
 
 # ---------------- graph ----------------
-def build_graph():
+def build_graph(llms: LLMs):
+    def bind(fn):
+        """Wrap a node so LangGraph sees fn(state); llms is filled in from here."""
+        def node(state: AgentState):
+            return fn(state, llms)
+        node.__name__ = fn.__name__
+        return node
+
     g = StateGraph(AgentState)
-    g.add_node("router", route_intent)
-    g.add_node("extract", extract_fields)
-    g.add_node("modify", modify_fields)
-    g.add_node("clarify", clarify)
-    g.add_node("query", answer_question)
+    g.add_node("router", bind(route_intent))
+    g.add_node("extract", bind(extract_fields))
+    g.add_node("modify", bind(modify_fields))
+    g.add_node("clarify", bind(clarify))
+    g.add_node("query", bind(answer_question))
     g.add_node("validate", check_completeness)
-    g.add_node("risk", assess_risk)
+    g.add_node("risk", bind(assess_risk))
 
     g.set_entry_point("router")
     g.add_conditional_edges("router", lambda s: s["intent"],
@@ -220,11 +232,23 @@ def build_graph():
     return g.compile()
 
 
-graph = build_graph()
+_default_graph = None
 
 
-def run_agent(raw_text: str = "", user_message: str = "", current_form: dict = None) -> dict:
-    result = graph.invoke({
+def _graph_for(llms: Optional[LLMs]):
+    """Tests pass their own LLMs. The app uses real Groq models, built on first use."""
+    global _default_graph
+    if llms is not None:
+        return build_graph(llms)
+    if _default_graph is None:
+        _default_graph = build_graph(get_llms())
+    return _default_graph
+
+
+def run_agent(raw_text: str = "", user_message: str = "",
+              current_form: Optional[dict] = None,
+              llms: Optional[LLMs] = None) -> dict:
+    result = _graph_for(llms).invoke({
         "raw_text": raw_text,
         "user_message": user_message,
         "current_form": current_form or {},

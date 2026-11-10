@@ -159,7 +159,7 @@ Severity guidance encoded in the risk prompt:
 ### Database
 
 ```bash
-psql -U postgres -c "CREATE DATABASE aivoa;"
+psql -U postgres -c "CREATE DATABASE complaint-copilot;"
 ```
 
 The `complaints` table is created automatically on first backend start.
@@ -177,7 +177,7 @@ pip install -r requirements.txt
 Copy `.env.example` to `.env` and fill in:
 
 ```
-DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@localhost:5432/aivoa
+DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@localhost:5432/complaint-copilot
 GROQ_API_KEY=gsk_...
 GROQ_MODEL=gemma2-9b-it
 GROQ_FALLBACK_MODEL=openai/gpt-oss-20b

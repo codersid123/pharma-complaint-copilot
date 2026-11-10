@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, model_validator
 from typing import Optional, List, Dict, Any, Literal
 
 Severity = Literal["Critical", "Major", "Minor"]
@@ -27,7 +27,7 @@ class RiskAssessment(BaseModel):
     level: str
     score: int
     rationale: str
-    recommended_action: str
+    recommended_action: str = ""
 
 class AgentResponse(BaseModel):
     patch: FormPatch
@@ -41,3 +41,39 @@ class TextIntakeRequest(BaseModel):
 class CopilotRequest(BaseModel):
     message: str
     current_form: Dict[str, Any]
+
+class SavedForm(ComplaintForm):
+    """The form as the frontend sends it on save.
+
+    The frontend keeps empty fields as "", so blanks become None and enum
+    casing is fixed before validation. Unknown keys are ignored.
+    """
+    model_config = ConfigDict(extra="ignore")
+
+    @model_validator(mode="before")
+    @classmethod
+    def _clean(cls, data):
+        if not isinstance(data, dict):
+            return data
+        out = {}
+        for k, v in data.items():
+            if isinstance(v, str):
+                v = v.strip() or None
+            if k in ("initial_severity", "priority") and isinstance(v, str):
+                v = v.capitalize()
+            out[k] = v
+        return out
+
+
+class ComplaintCreate(BaseModel):
+    form: SavedForm
+    risk: Optional[RiskAssessment] = None
+
+
+class DuplicateCheckRequest(BaseModel):
+    form: Dict[str, Any] = {}
+
+
+class ComplaintCreated(BaseModel):
+    id: int
+    complaint_number: str
