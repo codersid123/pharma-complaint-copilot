@@ -1,5 +1,6 @@
+from typing import Any, Dict, List, Literal, Optional
+
 from pydantic import BaseModel, ConfigDict, model_validator
-from typing import Optional, List, Dict, Any, Literal
 
 Severity = Literal["Critical", "Major", "Minor"]
 Priority = Literal["High", "Medium", "Low"]

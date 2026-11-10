@@ -1,5 +1,7 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, func
+from sqlalchemy import Column, DateTime, Integer, String, Text, func
+
 from .db import Base
+
 
 class Complaint(Base):
     __tablename__ = "complaints"

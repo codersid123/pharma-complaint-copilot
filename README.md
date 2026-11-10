@@ -1,5 +1,7 @@
 # AI-Powered Customer Complaint Management System
 
+[![CI](https://github.com/codersid123/pharma-complaint-copilot/actions/workflows/ci.yml/badge.svg)](https://github.com/codersid123/pharma-complaint-copilot/actions/workflows/ci.yml)
+
 A customer complaint intake and triage module for a pharmaceutical Quality Management
 System, covering both API (Active Pharmaceutical Ingredient) and FDF (Finished Dosage
 Form) manufacturing.
@@ -148,6 +150,16 @@ Severity guidance encoded in the risk prompt:
 ---
 
 ## Setup
+
+## Testing
+
+```bash
+cd backend
+pip install -r requirements-dev.txt
+pytest --cov
+```
+
+Tests use a fake LLM and an in-memory database, so they need no API key, no network and no Postgres. CI runs them on Python 3.12 and 3.14, plus the API tests against a real Postgres 16.
 
 ### Prerequisites
 

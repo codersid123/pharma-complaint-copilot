@@ -9,8 +9,14 @@ from .agent import run_agent
 from .db import Base, get_db, get_engine
 from .extract import extract_text
 from .models import Complaint
-from .schemas import (AgentResponse, ComplaintCreate, ComplaintCreated,
-                      CopilotRequest, DuplicateCheckRequest, TextIntakeRequest)
+from .schemas import (
+    AgentResponse,
+    ComplaintCreate,
+    ComplaintCreated,
+    CopilotRequest,
+    DuplicateCheckRequest,
+    TextIntakeRequest,
+)
 
 
 @asynccontextmanager
