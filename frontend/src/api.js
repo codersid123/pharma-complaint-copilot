@@ -23,3 +23,13 @@ export const saveComplaint = (form, risk) =>
 
 export const checkDuplicate = (form) =>
   api.post("/complaints/check-duplicate", { form }).then((r) => r.data);
+
+export const importFile = (file, dryRun) => {
+  const fd = new FormData();
+  fd.append("file", file);
+  return api
+    .post(`/import?dry_run=${dryRun}`, fd, {
+      headers: { "Content-Type": "multipart/form-data" },
+    })
+    .then((r) => r.data);
+};

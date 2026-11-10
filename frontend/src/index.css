@@ -316,3 +316,90 @@ label {
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------- page tabs ---------- */
+.tabs {
+  display: flex;
+  gap: 4px;
+  max-width: 1400px;
+  margin: auto;
+  padding: 16px 24px 0;
+}
+.tabs button {
+  border: 1px solid var(--border);
+  background: #fff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font: inherit;
+  color: var(--muted);
+}
+.tabs button.active {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: #eff6ff;
+  font-weight: 600;
+}
+
+/* ---------- bulk import ---------- */
+.layout-single {
+  padding: 24px;
+  max-width: 900px;
+  margin: auto;
+}
+.import-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.import-controls button {
+  width: auto; /* .btn-outline is full-width elsewhere; not here */
+}
+.import-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 20px 0 8px;
+}
+.import-summary div {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+}
+.import-summary strong {
+  font-size: 22px;
+}
+.import-summary span {
+  color: var(--muted);
+  font-size: 12px;
+}
+.import-summary .ok strong {
+  color: var(--green);
+}
+.import-summary .bad strong {
+  color: var(--red);
+}
+.error-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 13px;
+}
+.error-table th,
+.error-table td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.error-table th {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 12px;
+}
+.error-table td:first-child {
+  width: 60px;
+  font-weight: 600;
+}

@@ -1,12 +1,13 @@
 from datetime import datetime
 
-from fastapi import Depends, FastAPI, File, UploadFile
+from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from .agent import run_agent
 from .db import get_db
 from .extract import extract_text
+from .importer import ImportFileError, import_rows, read_table
 from .models import Complaint
 from .schemas import (
     AgentResponse,
@@ -96,3 +97,17 @@ def check_duplicate(payload: DuplicateCheckRequest, db: Session = Depends(get_db
     return {"duplicates": [{"complaint_number": r.complaint_number,
                             "product_name": r.product_name,
                             "created_at": str(r.created_at)} for r in rows]}
+
+
+@app.post("/api/import")
+async def import_file(file: UploadFile = File(...), dry_run: bool = False,
+                      db: Session = Depends(get_db)):
+    """Bulk-create complaints from a .csv or .xlsx file.
+
+    ?dry_run=true checks every row and returns the report without saving.
+    """
+    try:
+        df = read_table(file.filename or "", await file.read())
+        return import_rows(df, db, dry_run=dry_run)
+    except ImportFileError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
