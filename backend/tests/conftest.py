@@ -7,7 +7,7 @@ import os
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import close_all_sessions, sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.db import Base, get_db
@@ -57,8 +57,10 @@ def db_session():
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine, autoflush=False)
     yield Session
+    # Close any session a test left open; on Postgres an open session holds
+    # a lock that would make the next test's drop_all wait forever.
+    close_all_sessions()
     engine.dispose()
-
 
 @pytest.fixture
 def client(db_session):

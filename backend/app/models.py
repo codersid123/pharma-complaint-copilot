@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, Integer, String, Text, func
+from sqlalchemy import Column, Date, DateTime, Integer, String, Text, func
 
 from .db import Base
 
@@ -12,11 +12,11 @@ class Complaint(Base):
     product_name = Column(String(200))
     product_strength = Column(String(100))
     batch_number = Column(String(100), index=True)
-    manufacturing_date = Column(String(20))
-    expiry_date = Column(String(20))
+    manufacturing_date = Column(Date)
+    expiry_date = Column(Date)
     quantity_affected = Column(String(50))
+    complaint_date = Column(Date)
     complaint_type = Column(String(100))
-    complaint_date = Column(String(20))
     complaint_description = Column(Text)
     initial_severity = Column(String(20))
     priority = Column(String(20))

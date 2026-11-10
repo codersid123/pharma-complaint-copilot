@@ -19,7 +19,7 @@ position than a free-text form where nobody knows where a batch number came from
 | Layer    | Technology                              |
 | -------- | --------------------------------------- |
 | Frontend | React 18, Redux Toolkit, Vite, Inter    |
-| Backend  | Python 3.11, FastAPI                    |
+| Backend  | Python 3.12, FastAPI                    |
 | Agent    | LangGraph                               |
 | LLM      | Groq (see Model Selection Note)         |
 | Database | PostgreSQL 16 + SQLAlchemy              |
@@ -147,6 +147,28 @@ Severity guidance encoded in the risk prompt:
 ---
 
 ## Setup
+
+### Quick start (Docker)
+
+```bash
+cp .env.example .env      # add your GROQ_API_KEY
+docker compose up --build
+```
+
+Frontend: http://localhost:5173 · API docs: http://localhost:8000/docs
+The database is migrated and seeded with 50 sample complaints on first start.
+
+### Without Docker
+
+```bash
+cd backend
+python -m venv venv && venv\Scripts\Activate.ps1
+pip install -r requirements-dev.txt
+cp .env.example .env      # set DATABASE_URL and GROQ_API_KEY
+alembic upgrade head
+python -m app.seed
+uvicorn app.main:app --reload --port 8000
+```
 
 ## Testing
 

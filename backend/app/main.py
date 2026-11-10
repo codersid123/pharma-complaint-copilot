@@ -1,4 +1,3 @@
-from contextlib import asynccontextmanager
 from datetime import datetime
 
 from fastapi import Depends, FastAPI, File, UploadFile
@@ -6,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from .agent import run_agent
-from .db import Base, get_db, get_engine
+from .db import get_db
 from .extract import extract_text
 from .models import Complaint
 from .schemas import (
@@ -18,15 +17,7 @@ from .schemas import (
     TextIntakeRequest,
 )
 
-
-@asynccontextmanager
-async def lifespan(_app: FastAPI):
-    # Temporary: replaced by Alembic migrations on Day 3.
-    Base.metadata.create_all(bind=get_engine())
-    yield
-
-
-app = FastAPI(title="Complaint Copilot API", lifespan=lifespan)
+app = FastAPI(title="Complaint Copilot API")
 
 app.add_middleware(
     CORSMiddleware,
