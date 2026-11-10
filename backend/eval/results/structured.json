@@ -1,0 +1,406 @@
+{
+  "mode": "structured",
+  "model": "openai/gpt-oss-120b",
+  "run_at": "2026-11-10T18:26:31",
+  "summary": {
+    "fields": {
+      "customer_name": {
+        "accuracy": 0.3,
+        "correct": 3,
+        "correct_empty": 0,
+        "wrong": 2,
+        "missed": 5,
+        "invented": 0
+      },
+      "product_name": {
+        "accuracy": 0.4,
+        "correct": 4,
+        "correct_empty": 0,
+        "wrong": 1,
+        "missed": 5,
+        "invented": 0
+      },
+      "product_strength": {
+        "accuracy": 0.5,
+        "correct": 4,
+        "correct_empty": 1,
+        "wrong": 0,
+        "missed": 5,
+        "invented": 0
+      },
+      "batch_number": {
+        "accuracy": 0.6,
+        "correct": 4,
+        "correct_empty": 2,
+        "wrong": 0,
+        "missed": 4,
+        "invented": 0
+      },
+      "manufacturing_date": {
+        "accuracy": 0.7,
+        "correct": 1,
+        "correct_empty": 6,
+        "wrong": 0,
+        "missed": 3,
+        "invented": 0
+      },
+      "expiry_date": {
+        "accuracy": 0.8,
+        "correct": 2,
+        "correct_empty": 6,
+        "wrong": 0,
+        "missed": 2,
+        "invented": 0
+      },
+      "quantity_affected": {
+        "accuracy": 0.5,
+        "correct": 4,
+        "correct_empty": 1,
+        "wrong": 0,
+        "missed": 5,
+        "invented": 0
+      },
+      "complaint_date": {
+        "accuracy": 0.5,
+        "correct": 2,
+        "correct_empty": 3,
+        "wrong": 1,
+        "missed": 4,
+        "invented": 0
+      },
+      "complaint_type": {
+        "accuracy": 0.5,
+        "correct": 5,
+        "correct_empty": 0,
+        "wrong": 0,
+        "missed": 5,
+        "invented": 0
+      },
+      "initial_severity": {
+        "accuracy": 0.4,
+        "correct": 4,
+        "correct_empty": 0,
+        "wrong": 1,
+        "missed": 5,
+        "invented": 0
+      }
+    },
+    "overall_accuracy": 0.52,
+    "invented": 0,
+    "hallucination_rate": 0.0,
+    "risk_agreement": 0.4,
+    "errors": 5
+  },
+  "documents": [
+    {
+      "file": "sample1.pdf",
+      "why": "Formal notification; month-year dates",
+      "error": null,
+      "got": {
+        "customer_name": "MedLife Distributors Pvt Ltd",
+        "product_name": "Paracetamol IP Tablets",
+        "product_strength": "500 mg",
+        "batch_number": "APX-2451",
+        "manufacturing_date": "2025-03-01",
+        "expiry_date": "2027-02-01",
+        "quantity_affected": "240 blister strips",
+        "complaint_date": "2026-08-12",
+        "complaint_type": "Product Quality",
+        "initial_severity": "Major"
+      },
+      "outcomes": {
+        "customer_name": "correct",
+        "product_name": "correct",
+        "product_strength": "correct",
+        "batch_number": "correct",
+        "manufacturing_date": "correct",
+        "expiry_date": "correct",
+        "quantity_affected": "correct",
+        "complaint_date": "correct",
+        "complaint_type": "correct",
+        "initial_severity": "correct"
+      },
+      "risk_level": "Major",
+      "risk_agrees": true
+    },
+    {
+      "file": "sample2.pdf",
+      "why": "Informal email; no batch or dates (hallucination check)",
+      "error": "BadRequestError: Error code: 400 - {'error': {'message': 'Tool choice is required, but model did not call a tool', 'type': 'invalid_request_error', 'code': 'tool_use_failed', 'failed_generation': '{\\n  \"complaint_source\": \"Email\",\\n  \"customer_name\": \"Priya\",\\n  \"product_name\": \"Metformin\",\\n  \"prod",
+      "got": {
+        "customer_name": null,
+        "product_name": null,
+        "product_strength": null,
+        "batch_number": null,
+        "manufacturing_date": null,
+        "expiry_date": null,
+        "quantity_affected": null,
+        "complaint_date": null,
+        "complaint_type": null,
+        "initial_severity": null
+      },
+      "outcomes": {
+        "customer_name": "missed",
+        "product_name": "missed",
+        "product_strength": "missed",
+        "batch_number": "correct_empty",
+        "manufacturing_date": "correct_empty",
+        "expiry_date": "correct_empty",
+        "quantity_affected": "missed",
+        "complaint_date": "correct_empty",
+        "complaint_type": "missed",
+        "initial_severity": "missed"
+      },
+      "risk_level": null,
+      "risk_agrees": false
+    },
+    {
+      "file": "sample3.pdf",
+      "why": "Contamination; gives a RETEST date, not an expiry date (trap)",
+      "error": "BadRequestError: Error code: 400 - {'error': {'message': 'Tool choice is required, but model did not call a tool', 'type': 'invalid_request_error', 'code': 'tool_use_failed', 'failed_generation': '{\\n  \"complaint_source\": \"Customer\",\\n  \"customer_name\": \"Aurora Pharma Formulations Ltd (API customer)",
+      "got": {
+        "customer_name": null,
+        "product_name": null,
+        "product_strength": null,
+        "batch_number": null,
+        "manufacturing_date": null,
+        "expiry_date": null,
+        "quantity_affected": null,
+        "complaint_date": null,
+        "complaint_type": null,
+        "initial_severity": null
+      },
+      "outcomes": {
+        "customer_name": "missed",
+        "product_name": "missed",
+        "product_strength": "missed",
+        "batch_number": "missed",
+        "manufacturing_date": "missed",
+        "expiry_date": "correct_empty",
+        "quantity_affected": "missed",
+        "complaint_date": "missed",
+        "complaint_type": "missed",
+        "initial_severity": "missed"
+      },
+      "risk_level": null,
+      "risk_agrees": false
+    },
+    {
+      "file": "04_formal_letter.txt",
+      "why": "DD/MM/YYYY and MM/YYYY dates; labelling",
+      "error": "BadRequestError: Error code: 400 - {'error': {'message': 'Tool choice is required, but model did not call a tool', 'type': 'invalid_request_error', 'code': 'tool_use_failed', 'failed_generation': '{\\n  \"complaint_source\": \"Sunrise Clinic\",\\n  \"customer_name\": \"Dr. Anjali Nair\",\\n  \"product_name\": \"A",
+      "got": {
+        "customer_name": null,
+        "product_name": null,
+        "product_strength": null,
+        "batch_number": null,
+        "manufacturing_date": null,
+        "expiry_date": null,
+        "quantity_affected": null,
+        "complaint_date": null,
+        "complaint_type": null,
+        "initial_severity": null
+      },
+      "outcomes": {
+        "customer_name": "missed",
+        "product_name": "missed",
+        "product_strength": "missed",
+        "batch_number": "missed",
+        "manufacturing_date": "missed",
+        "expiry_date": "missed",
+        "quantity_affected": "missed",
+        "complaint_date": "missed",
+        "complaint_type": "missed",
+        "initial_severity": "missed"
+      },
+      "risk_level": null,
+      "risk_agrees": false
+    },
+    {
+      "file": "05_informal_chat.txt",
+      "why": "Very informal; batch explicitly unknown (hallucination check)",
+      "error": null,
+      "got": {
+        "customer_name": "Ravi",
+        "product_name": "Omeprazole",
+        "product_strength": null,
+        "batch_number": null,
+        "manufacturing_date": null,
+        "expiry_date": null,
+        "quantity_affected": "2-3 boxes",
+        "complaint_date": null,
+        "complaint_type": "Product Quality",
+        "initial_severity": "Major"
+      },
+      "outcomes": {
+        "customer_name": "wrong",
+        "product_name": "correct",
+        "product_strength": "correct_empty",
+        "batch_number": "correct_empty",
+        "manufacturing_date": "correct_empty",
+        "expiry_date": "correct_empty",
+        "quantity_affected": "correct",
+        "complaint_date": "correct_empty",
+        "complaint_type": "correct",
+        "initial_severity": "correct"
+      },
+      "risk_level": "Major",
+      "risk_agrees": true
+    },
+    {
+      "file": "06_adverse_event.eml",
+      "why": "Adverse event email; date written as '3rd September 2026'",
+      "error": null,
+      "got": {
+        "customer_name": "Dr. S. Iyer",
+        "product_name": "Ceftriaxone 1 g injection",
+        "product_strength": "1 g",
+        "batch_number": "CFT-2209",
+        "manufacturing_date": null,
+        "expiry_date": "2027-07-01",
+        "quantity_affected": "12 vials",
+        "complaint_date": "2026-09-03",
+        "complaint_type": "Adverse Event",
+        "initial_severity": "Critical"
+      },
+      "outcomes": {
+        "customer_name": "wrong",
+        "product_name": "wrong",
+        "product_strength": "correct",
+        "batch_number": "correct",
+        "manufacturing_date": "correct_empty",
+        "expiry_date": "correct",
+        "quantity_affected": "correct",
+        "complaint_date": "wrong",
+        "complaint_type": "correct",
+        "initial_severity": "correct"
+      },
+      "risk_level": "Critical",
+      "risk_agrees": true
+    },
+    {
+      "file": "07_ambiguous_dates.txt",
+      "why": "Short dates 'Jan 26' / 'Dec 27' and day-first 05/09/2026",
+      "error": "BadRequestError: Error code: 400 - {'error': {'message': 'Tool choice is required, but model did not call a tool', 'type': 'invalid_request_error', 'code': 'tool_use_failed', 'failed_generation': '{\\n  \"complaint_source\": \"Phone\",\\n  \"customer_name\": \"HealthKart Retail, New Delhi\",\\n  \"product_name\"",
+      "got": {
+        "customer_name": null,
+        "product_name": null,
+        "product_strength": null,
+        "batch_number": null,
+        "manufacturing_date": null,
+        "expiry_date": null,
+        "quantity_affected": null,
+        "complaint_date": null,
+        "complaint_type": null,
+        "initial_severity": null
+      },
+      "outcomes": {
+        "customer_name": "missed",
+        "product_name": "missed",
+        "product_strength": "missed",
+        "batch_number": "missed",
+        "manufacturing_date": "missed",
+        "expiry_date": "missed",
+        "quantity_affected": "missed",
+        "complaint_date": "missed",
+        "complaint_type": "missed",
+        "initial_severity": "missed"
+      },
+      "risk_level": null,
+      "risk_agrees": false
+    },
+    {
+      "file": "08_phone_transcript.txt",
+      "why": "Call log; 'lot' instead of batch; cold-chain failure",
+      "error": "BadRequestError: Error code: 400 - {'error': {'message': 'Tool choice is required, but model did not call a tool', 'type': 'invalid_request_error', 'code': 'tool_use_failed', 'failed_generation': '{\\n  \"complaint_source\": \"Phone Call\",\\n  \"customer_name\": \"Mr. Arjun Shah\",\\n  \"product_name\": \"Insuli",
+      "got": {
+        "customer_name": null,
+        "product_name": null,
+        "product_strength": null,
+        "batch_number": null,
+        "manufacturing_date": null,
+        "expiry_date": null,
+        "quantity_affected": null,
+        "complaint_date": null,
+        "complaint_type": null,
+        "initial_severity": null
+      },
+      "outcomes": {
+        "customer_name": "missed",
+        "product_name": "missed",
+        "product_strength": "missed",
+        "batch_number": "missed",
+        "manufacturing_date": "correct_empty",
+        "expiry_date": "correct_empty",
+        "quantity_affected": "missed",
+        "complaint_date": "missed",
+        "complaint_type": "missed",
+        "initial_severity": "missed"
+      },
+      "risk_level": null,
+      "risk_agrees": false
+    },
+    {
+      "file": "09_documentation.txt",
+      "why": "Paperwork only, product fine",
+      "error": null,
+      "got": {
+        "customer_name": "Wellness Chemists",
+        "product_name": "Omeprazole Capsules",
+        "product_strength": "20 mg",
+        "batch_number": "OMZ-3302",
+        "manufacturing_date": null,
+        "expiry_date": null,
+        "quantity_affected": null,
+        "complaint_date": "2026-08-18",
+        "complaint_type": "Documentation",
+        "initial_severity": "Minor"
+      },
+      "outcomes": {
+        "customer_name": "correct",
+        "product_name": "correct",
+        "product_strength": "correct",
+        "batch_number": "correct",
+        "manufacturing_date": "correct_empty",
+        "expiry_date": "correct_empty",
+        "quantity_affected": "correct_empty",
+        "complaint_date": "correct",
+        "complaint_type": "correct",
+        "initial_severity": "correct"
+      },
+      "risk_level": "Major",
+      "risk_agrees": false
+    },
+    {
+      "file": "10_two_batches.txt",
+      "why": "Mentions an old batch and the new one; must pick ATV-1244",
+      "error": null,
+      "got": {
+        "customer_name": "Green Cross Pharmacy",
+        "product_name": "Atorvastatin Tablets",
+        "product_strength": "10 mg",
+        "batch_number": "ATV-1244",
+        "manufacturing_date": null,
+        "expiry_date": null,
+        "quantity_affected": "75 strips",
+        "complaint_date": null,
+        "complaint_type": "Packaging",
+        "initial_severity": "Minor"
+      },
+      "outcomes": {
+        "customer_name": "correct",
+        "product_name": "correct",
+        "product_strength": "correct",
+        "batch_number": "correct",
+        "manufacturing_date": "correct_empty",
+        "expiry_date": "correct_empty",
+        "quantity_affected": "correct",
+        "complaint_date": "correct_empty",
+        "complaint_type": "correct",
+        "initial_severity": "wrong"
+      },
+      "risk_level": "Major",
+      "risk_agrees": true
+    }
+  ]
+}

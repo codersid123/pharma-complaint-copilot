@@ -23,14 +23,16 @@ def test_docx():
     assert "DOC-77" in extract_text("letter.DOCX", buf.getvalue())
 
 
-def test_eml_keeps_subject_and_body():
+def test_eml_keeps_subject_date_and_body():
     msg = EmailMessage()
     msg["Subject"] = "Broken tablets"
     msg["From"] = "qa@pharmacy.example"
+    msg["Date"] = "Fri, 04 Sep 2026 10:15:00 +0530"
     msg.set_content("Batch EML-5 had cracked tablets.")
     text = extract_text("mail.eml", msg.as_bytes())
     assert "Broken tablets" in text
     assert "EML-5" in text
+    assert "04 Sep 2026" in text   # the sent date is often the complaint date
 
 
 def test_txt_and_unknown_extension():

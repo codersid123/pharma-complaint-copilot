@@ -14,6 +14,43 @@ position than a free-text form where nobody knows where a batch number came from
 
 ---
 
+## Evaluation
+
+How accurately does the agent turn a complaint document into form fields? Measured on
+10 hand-labelled documents (formal letters, informal emails, a call log, an adverse-event
+email) with deliberate traps: missing batch numbers, a retest date instead of an expiry
+date, day-first dates, and a document mentioning two batches.
+
+|                                                       | Before | After prompt fixes |
+| ----------------------------------------------------- | ------ | ------------------ |
+| Overall field accuracy (100 fields)                   | 89%    | **99%**            |
+| Customer name                                         | 50%    | 100%               |
+| Initial severity                                      | 80%    | 100%               |
+| Invented values (19 fields absent from the documents) | **0**  | **0**              |
+| Risk level agrees with expected severity              | 80%    | 80%                |
+
+Model: `openai/gpt-oss-120b` on Groq. Run it: `cd backend; python -m eval.run_eval`.
+Full results: `backend/eval/results/`.
+
+**Findings**
+
+1. **No hallucinations.** Across both runs the model never invented a value that wasn't in
+   the document: it left missing batch numbers empty, did not copy a _retest_ date into
+   _expiry_, read `05/09/2026` as 5 September, and picked the right batch when two were mentioned.
+2. **Most errors were unclear definitions, not misreading.** The model put the contact
+   person ("Priya", "Dr. Anjali Nair") as the customer in 5 of 10 documents, and rated 3
+   defects one level too low. Defining _customer = the organisation_, _complaint date = the
+   date it was reported_, and _when unsure, choose the higher severity_ fixed these.
+3. **Structured output lost to plain JSON.** LangChain's `with_structured_output` (tool calling)
+   failed on 6 of 10 documents with `tool_use_failed` (the model wrote JSON as text instead
+   of calling the tool): 52% vs 89%. The JSON extractor stays the default (`EXTRACT_MODE=json`).
+4. **The evaluation found a non-AI bug.** The email reader dropped the `Date:` header, so the
+   model correctly left the complaint date empty. Fixed in `extract.py`.
+
+**Limits.** 10 documents is small. The prompt was adjusted after seeing errors on this same set,
+so these numbers are optimistic. The next step is a held-out set of new documents. Risk-level
+agreement (80%) was not tuned. Scanned PDFs (images) are not supported.
+
 ## Stack
 
 | Layer    | Technology                              |

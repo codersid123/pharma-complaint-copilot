@@ -19,8 +19,9 @@ def text_from_docx(data: bytes) -> str:
 def text_from_eml(data: bytes) -> str:
     msg = email.message_from_bytes(data, policy=policy.default)
     body = msg.get_body(preferencelist=("plain",))
-    return (f"Subject: {msg.get('subject','')}\nFrom: {msg.get('from','')}\n\n"
-            + (body.get_content() if body else ""))
+    return (f"Subject: {msg.get('subject','')}\nFrom: {msg.get('from','')}\n"
+        f"Date: {msg.get('date','')}\n\n"
+        + (body.get_content() if body else ""))
 
 def extract_text(filename: str, data: bytes) -> str:
     name = filename.lower()

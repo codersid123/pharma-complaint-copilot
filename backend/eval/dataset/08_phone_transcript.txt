@@ -1,0 +1,8 @@
+CALL LOG - Customer Service
+Caller: Mr. Arjun Shah, store manager, CarePlus Pharma, Mumbai
+Call date: 21 Sep 2026
+
+Caller says a carton of Insulin Glargine Injection 100 IU/ml (lot INS-6610) was delivered
+yesterday and the vials inside felt warm to the touch; the cold-chain indicator on the box
+had turned red. 40 vials in the carton. He has not dispensed any and moved them to the
+fridge. Asked whether the stock is still usable and requested urgent advice.

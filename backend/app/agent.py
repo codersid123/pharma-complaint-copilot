@@ -1,4 +1,5 @@
 import json
+import os
 import re
 from typing import List, Optional, TypedDict
 
@@ -73,9 +74,14 @@ Return ONLY a JSON object with exactly these keys:
 Rules:
 - Use null for anything not stated. NEVER invent a batch number, date, or name.
 - Dates as YYYY-MM-DD. If only month and year are given, use the first of that month.
+- customer_name: the organisation that reported the complaint (pharmacy, hospital,
+  distributor, company), NOT the individual person who wrote, signed or called.
+- complaint_date: the date the complaint was reported (date of the letter, email or call),
+  NOT the date the problem happened.
 - complaint_type: Product Quality | Packaging | Labelling | Adverse Event | Contamination | Documentation
 - initial_severity: Critical (patient safety, contamination, sterility failure, wrong product),
   Major (significant quality defect with no immediate safety risk), Minor (cosmetic).
+  If unsure between two levels, choose the higher one.
 - priority: High | Medium | Low, consistent with severity.
 - complaint_description: a concise factual summary of the defect reported.
 - No markdown, no explanation, JSON only.
@@ -93,6 +99,23 @@ def extract_fields(state: AgentState, llms: LLMs):
     return {"form_patch": {"updates": updates, "clear": []},
             "assistant_message": f"I extracted {len(updates)} fields from the document. Please review."}
 
+def extract_fields_structured(state: AgentState, llms: LLMs):
+    """Same prompt, but the model must return data matching ComplaintForm.
+
+    LangChain sends the schema to Groq and parses the reply into a
+    ComplaintForm object, so there is no regex and no hand-written JSON parsing.
+    """
+    model = llms.reasoning.with_structured_output(ComplaintForm)
+    form = model.invoke(EXTRACT_PROMPT.format(
+        keys=", ".join(FIELD_KEYS), text=state["raw_text"][:6000]))
+    data = form.model_dump() if hasattr(form, "model_dump") else dict(form or {})
+    updates = {k: v for k, v in data.items()
+               if k in FIELD_KEYS and v not in (None, "", "null", "N/A")}
+    return {"form_patch": {"updates": updates, "clear": []},
+            "assistant_message": f"I extracted {len(updates)} fields from the document. Please review."}
+
+
+EXTRACTORS = {"json": extract_fields, "structured": extract_fields_structured}
 
 # ---------------- node 3: modify ----------------
 MODIFY_PROMPT = """You edit a pharmaceutical complaint form. The user cannot type into
@@ -202,7 +225,10 @@ def assess_risk(state: AgentState, llms: LLMs):
 
 
 # ---------------- graph ----------------
-def build_graph(llms: LLMs):
+def build_graph(llms: LLMs, extract_mode: Optional[str] = None):
+    mode = extract_mode or os.getenv("EXTRACT_MODE", "json")
+    if mode not in EXTRACTORS:
+        raise ValueError(f"EXTRACT_MODE must be one of {sorted(EXTRACTORS)}, not '{mode}'")
     def bind(fn):
         """Wrap a node so LangGraph sees fn(state); llms is filled in from here."""
         def node(state: AgentState):
@@ -212,7 +238,7 @@ def build_graph(llms: LLMs):
 
     g = StateGraph(AgentState)
     g.add_node("router", bind(route_intent))
-    g.add_node("extract", bind(extract_fields))
+    g.add_node("extract", bind(EXTRACTORS[mode]))
     g.add_node("modify", bind(modify_fields))
     g.add_node("clarify", bind(clarify))
     g.add_node("query", bind(answer_question))
