@@ -158,46 +158,6 @@ pytest --cov
 
 Tests use a fake LLM and an in-memory database, so they need no API key, no network and no Postgres. CI runs them on Python 3.12 and 3.14, plus the API tests against a real Postgres 16.
 
-### Prerequisites
-
-- Python 3.11 or 3.12
-- Node.js 18+
-- PostgreSQL 16
-- A Groq API key from https://console.groq.com
-
-### Database
-
-```bash
-psql -U postgres -c "CREATE DATABASE complaint-copilot;"
-```
-
-The `complaints` table is created automatically on first backend start.
-
-### Backend
-
-```bash
-cd backend
-python -m venv venv
-venv\Scripts\Activate.ps1        # Windows PowerShell
-# source venv/bin/activate       # macOS / Linux
-pip install -r requirements.txt
-```
-
-Copy `.env.example` to `.env` and fill in:
-
-```
-DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@localhost:5432/complaint-copilot
-GROQ_API_KEY=gsk_...
-GROQ_MODEL=gemma2-9b-it
-GROQ_FALLBACK_MODEL=openai/gpt-oss-20b
-GROQ_REASONING_MODEL=openai/gpt-oss-120b
-```
-
-```bash
-uvicorn app.main:app --reload --port 8000
-```
-
-API docs at http://localhost:8000/docs
 
 ### Frontend
 
